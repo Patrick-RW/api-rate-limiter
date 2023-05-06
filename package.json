@@ -1,0 +1,16 @@
+{
+  "name": "api-rate-limter",
+  "version": "1.0.0",
+  "description": "An API rate limiter based on the sliding window logs algorithm",
+  "main": "index.js",
+  "author": "Patrick SHEMA",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.10.0",
+    "redis": "^4.6.6"
+  }
+}

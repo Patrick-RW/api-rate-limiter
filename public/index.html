@@ -1,0 +1,216 @@
+<html>
+  <head>
+    <title>API Rate limitter</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <main class="arl-container">
+    <section class="arl-request">
+      <h1>API Rate Limitter</h1>
+      <div class="arl-request--limit-types">
+        <div data-limit-type="system" class="arl-checkbox">
+          <div class="arl-checkbox--check">
+            <div class="arl-checkbox--check-inner"></div>
+          </div>
+          <span>Across system - Max 2 requests/sec</span>
+        </div>
+        <div data-limit-type="monthly" class="arl-checkbox">
+          <div class="arl-checkbox--check">
+            <div class="arl-checkbox--check-inner"></div>
+          </div>
+          <span>Per client - Max 30 requests/month</span>
+        </div>
+        <!-- <div data-limit-type="system" class="arl-checkbox">
+          <div class="arl-checkbox--check">
+            <div class="arl-checkbox--check-inner"></div>
+          </div>
+          <span>Per user/sec - Max 2 requests</span>
+        </div> -->
+      </div>
+      <div class="arl-request--num-requests">
+        <span class="arl-request--input-label">Client ID</span>
+        <input
+          value=""
+          placeholder=""
+          class="arl-request--input arl-request--client-id--input"
+          type="text"
+        />
+      </div>
+      <div class="arl-request--num-requests">
+        <span class="arl-request--input-label"
+          >Number of similtanuous requests to send to the web service</span
+        >
+        <input
+          value="1"
+          min="1"
+          placeholder=""
+          class="arl-request--input arl-request--num-requests--input"
+          type="number"
+        />
+      </div>
+      <div class="arl-request-actions">
+        <button class="test-web-service--btn" data-web-service="ws-1">
+          Web service 1
+        </button>
+        <button class="test-web-service--btn" data-web-service="ws-2">
+          Web service 2
+        </button>
+        <button class="test-web-service--btn" data-web-service="ws-3">
+          Web service 3
+        </button>
+      </div>
+    </section>
+    <section class="arl-response">
+      <div class="arl-response--logs"></div>
+      <button class="art-clear-logs">Clear logs</button>
+    </section>
+  </main>
+  <script>
+    const testServiceBtns = document.querySelectorAll(".test-web-service--btn");
+
+    const limitTypeOptions = document.querySelectorAll(".arl-checkbox");
+
+    const msgBox = document.querySelector(".arl-response--logs");
+
+    const clearLogsBtn = document.querySelector(".art-clear-logs");
+
+    const numOfRequestsInput = document.querySelector(
+      "input.arl-request--num-requests--input"
+    );
+
+    const clientIdInput = document.querySelector(
+      "input.arl-request--client-id--input"
+    );
+
+    const initMsg = `
+      <span class="arl-response--loading">
+        Assuming the above 3 buttons simulate 3 web services/servers/APIs in a cluster or distributed-system. Click one of them to send N requests to the web service/API it points. You can also test against a certain condition (see checkboxes), and specify the number of requests to send (see the texfield). By default the setup will test all conditions (client, system, and monthly rate limit windows)
+      </span>
+    `;
+
+    let msgBoxMsg = initMsg;
+
+    msgBox.innerHTML = msgBoxMsg;
+
+    let selectedLimitType = "";
+
+    let isFirstTime = true;
+
+    let numOfRequests = 1;
+
+    let clientId = "";
+
+    const setClientID = async () => {
+      const data = await fetch("https://api.ipify.org/?format=json").then(
+        (res) => res.json()
+      );
+
+      if (data.ip) {
+        const ip = data.ip.split('.').reverse().join('-1-')
+
+        clientId = ip;
+
+        clientIdInput.setAttribute("value", ip);
+      }
+    };
+
+    setClientID();
+
+    const addLog = (logText) => {
+      msgBoxMsg = logText + "<br>" + msgBoxMsg;
+
+      msgBox.innerHTML = msgBoxMsg;
+    };
+
+    const onLimitTypeChange = (newLimitType) => {
+      selectedLimitType = newLimitType;
+
+      limitTypeOptions.forEach((lTypeOpt) => {
+        const lTypeVal = lTypeOpt.getAttribute("data-limit-type");
+
+        lTypeOpt.removeAttribute("data-checked");
+
+        if (lTypeVal === newLimitType) {
+          lTypeOpt.setAttribute("data-checked", "1");
+        }
+      });
+    };
+
+    const onTestWebService = (webService, limitType, requestPosition) => {
+      if (!webService) return;
+
+      addLog(`
+        <span class="arl-response--loading">
+          sending req:${requestPosition} on ${webService
+        .split("-")
+        .join(":")} ...
+        </span>
+      `);
+
+      return fetch(webService + "/" + limitType+'?clientId='+clientId)
+        .then(async (res) => {
+          if (res.status == 200) {
+            return res?.json();
+          }
+
+          const err = (await res.text()) || res.statusText;
+
+          throw new Error(err);
+        })
+        .then((data) => {
+          addLog(`
+            <span class="arl-response--success">
+              req:${requestPosition} ${JSON.stringify(data)}
+            </span>
+          `);
+        })
+        .catch((err) => {
+          addLog(`
+            <span class="arl-response--error">
+              req:${requestPosition} ${err?.message || err}
+            </span>
+          `);
+        });
+    };
+
+    testServiceBtns.forEach((btn) => {
+      const webService = btn.getAttribute("data-web-service");
+
+      btn.addEventListener("click", async (e) => {
+        try {
+          const requests = new Array(numOfRequests || 1)
+            .fill(1)
+            .map((_, requestPosition) =>
+              onTestWebService(
+                webService,
+                selectedLimitType,
+                requestPosition + 1
+              )
+            );
+
+          await Promise.all(requests);
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    });
+
+    limitTypeOptions.forEach((lTypeOpt) => {
+      const lType = lTypeOpt.getAttribute("data-limit-type");
+
+      lTypeOpt.addEventListener("click", (e) => onLimitTypeChange(lType));
+    });
+
+    clearLogsBtn.addEventListener("click", () => {
+      msgBoxMsg = initMsg;
+      msgBox.innerHTML = initMsg;
+    });
+
+    numOfRequestsInput.addEventListener("change", (e) => {
+      numOfRequests = Number(e.target.value || 1);
+    });
+
+    clientIdInput.addEventListener("change", (e) => {
+      clientId = e.target.value;
+    });
+  </script>
+</html>
