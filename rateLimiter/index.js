@@ -142,7 +142,7 @@ class APIRateLimitterWithRedis {
    *
    * @param {object} pgClient an instance of posgres client
    * @param {object} redisClient an instance of redis client with connection
-   * @param {'month' | 'system'} limitType
+   * @param {'monthly' | 'system'} limitType
    * @param {number} windowSizeInMs
    * @param {number} maxRequestsPerWindow
    */
