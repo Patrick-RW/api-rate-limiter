@@ -42,10 +42,9 @@
         <input
           value="1"
           min="1"
-          max="300"
           placeholder=""
           class="arl-request--input arl-request--num-requests--input"
-          pattern="\d{3}"
+          type="number"
         />
       </div>
       <div class="arl-request-actions">
@@ -206,19 +205,19 @@
       msgBox.innerHTML = initMsg;
     });
 
-    numOfRequestsInput.addEventListener("change", (e) => {
+    numOfRequestsInput.addEventListener("keyup", (e) => {
       const value = e.target.value;
 
-      console.log('changed to', 1);
+      numOfRequests = Number(e.target.value || 1);
 
-      if (
-        typeof value === "number" &&
-        Number(value) <= 500 &&
-        Number(value) != 0
-      ) {
+      if (Number(value) <= 100) {
         numOfRequests = Number(value);
+
+        numOfRequestsInput.value = value;
       } else {
-        numOfRequestsInput.setAttribute("value", 1);
+        numOfRequests = 1;
+
+        numOfRequestsInput.value = 1;
       }
     });
 
