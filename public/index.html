@@ -115,6 +115,22 @@
 
     setClientID();
 
+    const onChangeNumberOfRequests = (e) => {
+      const value = e.target.value;
+
+      numOfRequests = Number(e.target.value || 1);
+
+      if (Number(value) <= 100) {
+        numOfRequests = Number(value);
+
+        numOfRequestsInput.value = value;
+      } else {
+        numOfRequests = 1;
+
+        numOfRequestsInput.value = 1;
+      }
+    }
+
     const addLog = (logText) => {
       msgBoxMsg = logText + "<br>" + msgBoxMsg;
 
@@ -205,21 +221,9 @@
       msgBox.innerHTML = initMsg;
     });
 
-    numOfRequestsInput.addEventListener("keyup", (e) => {
-      const value = e.target.value;
+    numOfRequestsInput.addEventListener("keyup", onChangeNumberOfRequests);
 
-      numOfRequests = Number(e.target.value || 1);
-
-      if (Number(value) <= 100) {
-        numOfRequests = Number(value);
-
-        numOfRequestsInput.value = value;
-      } else {
-        numOfRequests = 1;
-
-        numOfRequestsInput.value = 1;
-      }
-    });
+    numOfRequestsInput.addEventListener("change", onChangeNumberOfRequests);
 
     clientIdInput.addEventListener("change", (e) => {
       clientId = e.target.value;
