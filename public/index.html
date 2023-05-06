@@ -42,9 +42,10 @@
         <input
           value="1"
           min="1"
+          max="300"
           placeholder=""
           class="arl-request--input arl-request--num-requests--input"
-          type="number"
+          pattern="\d{3}"
         />
       </div>
       <div class="arl-request-actions">
@@ -105,7 +106,7 @@
       );
 
       if (data.ip) {
-        const ip = data.ip.split('.').reverse().join('-1-')
+        const ip = data.ip.split(".").reverse().join("-1-");
 
         clientId = ip;
 
@@ -146,7 +147,7 @@
         </span>
       `);
 
-      return fetch(webService + "/" + limitType+'?clientId='+clientId)
+      return fetch(webService + "/" + limitType + "?clientId=" + clientId)
         .then(async (res) => {
           if (res.status == 200) {
             return res?.json();
@@ -206,7 +207,19 @@
     });
 
     numOfRequestsInput.addEventListener("change", (e) => {
-      numOfRequests = Number(e.target.value || 1);
+      const value = e.target.value;
+
+      console.log('changed to', 1);
+
+      if (
+        typeof value === "number" &&
+        Number(value) <= 500 &&
+        Number(value) != 0
+      ) {
+        numOfRequests = Number(value);
+      } else {
+        numOfRequestsInput.setAttribute("value", 1);
+      }
     });
 
     clientIdInput.addEventListener("change", (e) => {

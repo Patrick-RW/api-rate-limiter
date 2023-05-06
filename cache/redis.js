@@ -1,7 +1,6 @@
 const { createClient } = require("redis");
 
-const REDIS_CONN_STRING =
-  "redis://default:taLZ2SvlFQVOEhvIj0NTyfFTwy5EPdJa@redis-18279.c290.ap-northeast-1-2.ec2.cloud.redislabs.com:18279";
+const REDIS_CONN_STRING = process.env.REDIS_URL;
 
 const redisClient = createClient({
   url: REDIS_CONN_STRING,

@@ -1,5 +1,7 @@
 const express = require("express");
 
+require("dotenv").config();
+
 const limitReqRate = require("./middleware/limitReqRate");
 
 const app = express();
