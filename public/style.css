@@ -8,8 +8,38 @@ html {
   align-items: center;
   margin: 0;
   padding: 0;
-  background: #ffffff;
+  background: rgb(246, 199, 123);
   box-sizing: border-box;
+  color: rgb(41, 37, 42);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  border-radius: 2px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(41, 37, 42) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(41, 37, 42) !important;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 body {
@@ -21,9 +51,9 @@ body {
 }
 
 button {
-  background-color: #ffffff;
-  color: black;
-  border: 2px dashed black;
+  background-color: rgb(115, 84, 76);
+  color: rgb(236, 232, 231);
+  border: 2px solid rgb(115, 84, 76);
   min-width: 130px;
   min-height: 40px;
   border-radius: 10px;
@@ -35,13 +65,13 @@ button {
 }
 
 button:hover {
-  background-color: black;
+  background-color: rgb(156, 115, 105);
   color: #ffffff;
-  border-color: #ffffff;
 }
 
 button:active {
-  opacity: 0.6;
+  background-color: rgb(115, 84, 76);
+  color: #ffffff;
 }
 
 button.art-disabled,
@@ -57,9 +87,9 @@ button.art-disabled:active {
 input,
 input:focus {
   width: 100%;
-  background-color: black;
-  border: 2px solid black;
-  color: #ffffff;
+  background-color: rgb(52, 48, 53);
+  border: 2px solid rgb(52, 48, 53);
+  color: rgb(246, 199, 123);
   min-height: 40px;
   border-radius: 10px;
   outline: none;
@@ -77,7 +107,7 @@ input:focus {
   gap: 10px;
   cursor: pointer;
   user-select: none;
-  opacity: 0.2;
+  opacity: 0.4;
 }
 
 .arl-checkbox:hover {
@@ -89,10 +119,14 @@ input:focus {
   opacity: 1;
 }
 
+.arl-checkbox[data-checked="1"] .arl-checkbox--check-inner {
+  background-color: rgb(41, 37, 42);
+}
+
 .arl-checkbox--check {
   width: 20px;
   height: 20px;
-  border: 1px dashed black;
+  border: 1px solid rgb(41, 37, 42);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -103,7 +137,7 @@ input:focus {
 .arl-checkbox--check-inner {
   width: 14px;
   height: 14px;
-  background: black;
+  background-color: transparent;
   border-radius: 3px;
 }
 
@@ -119,7 +153,6 @@ input:focus {
   width: 100%;
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
 }
@@ -131,13 +164,27 @@ input:focus {
   justify-content: center;
   align-items: center;
   gap: 15px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+  margin-top: 10px;
 }
 
-.arl-request--num-requests {
-  margin-bottom: 20px;
+.arl-request--params-wraper {
   width: 100%;
-  text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.arl-request--params--client-id {
+  text-align: right;
+  width: 270px;
+}
+
+.arl-request--params--num-requests {
+  text-align: right;
+  width: 130px;
 }
 
 .arl-request--input {
@@ -146,8 +193,9 @@ input:focus {
 
 .arl-request--input-label {
   text-align: center;
-  opacity: 0.5;
+  opacity: 0.8;
   font-weight: bold;
+  display: block;
 }
 
 .arl-request-actions {
@@ -163,7 +211,7 @@ input:focus {
   position: relative;
   min-height: 50px;
   width: 100%;
-  background-color: black;
+  background-color: rgb(41, 37, 42);
   border-radius: 10px;
   padding: 20px;
 }
@@ -187,7 +235,6 @@ input:focus {
   border-radius: 10px;
   border-width: 1px;
   border-style: solid;
-  opacity: 0;
 }
 
 .arl-response--loading {
@@ -195,10 +242,10 @@ input:focus {
 }
 
 .arl-response--error {
-  color: lightcoral;
+  color: rgb(223, 70, 74);
   font-weight: bold;
 }
 
 .arl-response--success {
-  color: lightgreen;
+  color: rgb(121, 203, 137);
 }

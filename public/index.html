@@ -26,26 +26,26 @@
           <span>Per user/sec - Max 2 requests</span>
         </div> -->
       </div>
-      <div class="arl-request--num-requests">
-        <span class="arl-request--input-label">Client ID</span>
-        <input
-          value=""
-          placeholder=""
-          class="arl-request--input arl-request--client-id--input"
-          type="text"
-        />
-      </div>
-      <div class="arl-request--num-requests">
-        <span class="arl-request--input-label"
-          >Number of similtanuous requests to send to the web service</span
-        >
-        <input
-          value="1"
-          min="1"
-          placeholder=""
-          class="arl-request--input arl-request--num-requests--input"
-          type="number"
-        />
+      <div class="arl-request--params-wraper">
+        <div class="arl-request--params arl-request--params--client-id">
+          <span class="arl-request--input-label">Client ID</span>
+          <input
+            value=""
+            placeholder=""
+            class="arl-request--input arl-request--client-id--input"
+            type="text"
+          />
+        </div>
+        <div class="arl-request--params arl-request--params--num-requests">
+          <span class="arl-request--input-label">Requests</span>
+          <input
+            value="1"
+            min="1"
+            placeholder=""
+            class="arl-request--input arl-request--num-requests--input"
+            type="number"
+          />
+        </div>
       </div>
       <div class="arl-request-actions">
         <button class="test-web-service--btn" data-web-service="ws-1">
@@ -129,7 +129,7 @@
 
         numOfRequestsInput.value = 1;
       }
-    }
+    };
 
     const addLog = (logText) => {
       msgBoxMsg = logText + "<br>" + msgBoxMsg;

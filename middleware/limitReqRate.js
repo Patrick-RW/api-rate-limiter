@@ -83,7 +83,7 @@ const limitReqRate = (limitType = "system") => {
       const rateLimitInfo = req.rateLimitInfo || [];
 
       rateLimitInfo.push(
-        `type=${rateLimitType} max=${maxRequestsPerWindow} left=${
+        `window=${rateLimitType} max=${maxRequestsPerWindow} left=${
           maxRequestsPerWindow - (rateLimitter.currentWindowRequestsCount + 1)
         }`
       );
