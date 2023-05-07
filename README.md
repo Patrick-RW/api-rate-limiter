@@ -1,11 +1,11 @@
 ## API rate limiter.
-This solution solution makes use of the sliding window logs algorithm and redis sorted sets to implment an API rate limiter.
+This solution makes use of the sliding window logs algorithm and redis sorted sets to implement an API rate limiter.
 ## Steps to test the solution
 
 ### 1. Add environment variables
 ```bash
 # add redis URL
-$ echo "REDIS_URL=<REDIS_URL>" # Replace <REDIS_URL> with the actual URL of any redis instance
+$ echo 'REDIS_URL=<REDIS_URL>' >> .env # Replace <REDIS_URL> with the actual URL of any redis instance
 ```
 ### 2. Install dependencies
 
