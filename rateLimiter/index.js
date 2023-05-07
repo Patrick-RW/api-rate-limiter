@@ -5,31 +5,17 @@
 class APIRateLimitter {
   /**
    *
-   * @param {object} pgClient an instance of posgres database client
    * @param {object} redisClient an instance of redis client with connection
    * @param {'monthly' | 'system'} limitType
    * @param {number} windowSizeInMs an integer(time in milliseconds) representing the size of the rate limit window
    * @param {number} maxRequestsPerWindow an integer(time in milliseconds) representing the size of the maximum requests per rate limit window
    */
-  constructor(
-    pgClient,
-    redisClient,
-    limitType,
-    windowSizeInMs,
-    maxRequestsPerWindow
-  ) {
-    this.pgClient = pgClient;
+  constructor(redisClient, limitType, windowSizeInMs, maxRequestsPerWindow) {
     this.redisClient = redisClient;
     this.limitType = limitType;
     this.windowSizeInMs = windowSizeInMs;
     this.maxRequestsPerWindow = maxRequestsPerWindow;
     this.currentWindowRequestsCount = 0;
-
-    if (!pgClient || typeof pgClient !== "object") {
-      throw new Error(
-        "No database client provided!, you must pass a valid database client/pool with an active connection"
-      );
-    }
 
     if (!redisClient || typeof redisClient !== "object") {
       throw new Error(
@@ -81,34 +67,6 @@ class APIRateLimitter {
         return false;
       }
 
-      // if (!currentWindowRequestsCount) {
-      //   const res = await this.pgClient.query(
-      //     "SELECT windowKey, score FROM api_rate_limiter WHERE windowKey = $1 AND score < $2 AND score > $3",
-      //     [windowKey, nowMs, windowStartInMs]
-      //   );
-
-      //   if (res.rowCount > 0) {
-      //     const newMembersToCache = res.rows.map((row) => {
-      //       return this.redisClient.zAdd(windowKey, {
-      //         score: row.score,
-      //         value: String(row.score),
-      //       });
-      //     });
-
-      //     await Promise.all(newMembersToCache);
-
-      //     console.log("ADDED TO CACHE COUNT=", res.rowCount);
-      //   }
-
-      //   currentWindowRequestsCount = res.rowCount || 0;
-      // }
-
-      // this.pgClient.query(
-      //   "INSERT INTO api_rate_limiter(windowKey, score) VALUES ($1, $2)",
-      //   [windowKey, nowMs]
-      // )
-      // .catch(console.error);
-
       await this.redisClient.zAdd(windowKey, {
         score: nowMs,
         value: String(nowMs),
@@ -124,12 +82,6 @@ class APIRateLimitter {
 
       await this.redisClient.expire(windowKey, windowSizeInSeconds);
 
-      // this.pgClient.query(
-      //   "DELETE FROM api_rate_limiter WHERE windowKey = $1 AND score < $2",
-      //   [windowKey, windowStartInMs]
-      // )
-      // .catch(console.error);
-
       return true;
     } catch (error) {
       console.error(error);
@@ -140,21 +92,13 @@ class APIRateLimitter {
 class APIRateLimitterWithRedis {
   /**
    *
-   * @param {object} pgClient an instance of posgres client
    * @param {object} redisClient an instance of redis client with connection
    * @param {'monthly' | 'system'} limitType
    * @param {number} windowSizeInMs
    * @param {number} maxRequestsPerWindow
    */
-  async create(
-    pgClient,
-    redisClient,
-    limitType,
-    windowSizeInMs,
-    maxRequestsPerWindow
-  ) {
+  async create(redisClient, limitType, windowSizeInMs, maxRequestsPerWindow) {
     const rateLimitter = new APIRateLimitter(
-      pgClient,
       redisClient,
       limitType,
       windowSizeInMs,

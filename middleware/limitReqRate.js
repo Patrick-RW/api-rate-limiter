@@ -1,7 +1,6 @@
 const apiRateLimitRules = require("../database/apiRateLimitRules");
-const redisClient = require("../cache/redis");
 
-const pgClient = require("../database/postgres");
+const redisClient = require("../cache/redis");
 
 const APIRateLimitterWithRedis = require("../rateLimiter");
 
@@ -63,7 +62,6 @@ const limitReqRate = (limitType = "system") => {
       const rateLimitterFactory = new APIRateLimitterWithRedis();
 
       const rateLimitter = await rateLimitterFactory.create(
-        pgClient,
         redisClient,
         rateLimitType,
         windowSizeInMs,
