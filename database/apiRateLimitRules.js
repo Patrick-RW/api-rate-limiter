@@ -1,5 +1,5 @@
 const apiRateLimitRules = {
-  apiKey: "SOME_API_KEY",
+  apiKey: "ARL",
   maxRequestsPerMonth: 30,
   maxRequestsPerWindow: 2,
   windowSizeMs: 1000,

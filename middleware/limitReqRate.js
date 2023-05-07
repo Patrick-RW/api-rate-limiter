@@ -6,8 +6,7 @@ const APIRateLimitterWithRedis = require("../rateLimiter");
 
 /**
  *
- * @param {'monthly' | 'system'} limitType it can also be passed to the request's params
- * @returns
+ * @param {'monthly' | 'system'} limitType can also be passed as a request paramater
  */
 const limitReqRate = (limitType = "system") => {
   return async (req, res, next) => {
@@ -17,15 +16,15 @@ const limitReqRate = (limitType = "system") => {
         req.headers["x-forwarded-for"] ||
         req.socket.remoteAddress;
 
-      if (uniqueRequestId === "::1") {
-        uniqueRequestId = "127.0.0.1";
-      }
-
       let windowSizeInMs;
 
       let maxRequestsPerWindow;
 
       const rateLimitType = req.params.limitType || limitType;
+
+      uniqueRequestId = uniqueRequestId + ":" + rateLimitType;
+
+      uniqueRequestId = apiRateLimitRules.apiKey + ":" + uniqueRequestId;
 
       switch (rateLimitType) {
         case "system":
@@ -43,7 +42,7 @@ const limitReqRate = (limitType = "system") => {
           const endOfMonthMs = new Date(
             currentYear,
             currentMonth + 1,
-            1,
+            0,
             23,
             59,
             59
@@ -63,7 +62,6 @@ const limitReqRate = (limitType = "system") => {
 
       const rateLimitter = await rateLimitterFactory.create(
         redisClient,
-        rateLimitType,
         windowSizeInMs,
         maxRequestsPerWindow
       );
@@ -74,21 +72,21 @@ const limitReqRate = (limitType = "system") => {
         return res
           .status(429)
           .send(
-            `Rate limit reached! Max ${rateLimitter.maxRequestsPerWindow} ${rateLimitType} requests reached.`
+            `Rate limit reached! Max ${rateLimitter.maxRequestsPerWindow} ${rateLimitType} requests reached. Try again in ${rateLimitter.retryMs} ms.`
           );
       }
 
       const rateLimitInfo = req.rateLimitInfo || [];
 
       rateLimitInfo.push(
-        `window=${rateLimitType} max=${maxRequestsPerWindow} left=${
+        `ctx=${rateLimitType} max=${maxRequestsPerWindow} left=${
           maxRequestsPerWindow - (rateLimitter.currentWindowRequestsCount + 1)
         }`
       );
 
       req.rateLimitInfo = rateLimitInfo;
 
-      next();
+      return next();
     } catch (error) {
       console.error(error);
 

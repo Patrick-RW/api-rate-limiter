@@ -6,26 +6,20 @@ class APIRateLimitter {
   /**
    *
    * @param {object} redisClient an instance of redis client with connection
-   * @param {'monthly' | 'system'} limitType
    * @param {number} windowSizeInMs an integer(time in milliseconds) representing the size of the rate limit window
    * @param {number} maxRequestsPerWindow an integer(time in milliseconds) representing the size of the maximum requests per rate limit window
    */
-  constructor(redisClient, limitType, windowSizeInMs, maxRequestsPerWindow) {
+  constructor(redisClient, windowSizeInMs, maxRequestsPerWindow) {
     this.redisClient = redisClient;
-    this.limitType = limitType;
     this.windowSizeInMs = windowSizeInMs;
     this.maxRequestsPerWindow = maxRequestsPerWindow;
     this.currentWindowRequestsCount = 0;
+    this.retryMs = 0;
+    this.nextWindowStartMs = 0;
 
     if (!redisClient || typeof redisClient !== "object") {
       throw new Error(
         "No cache client provided!, you must pass a valid redis client with an active connection"
-      );
-    }
-
-    if (!limitType || !["monthly", "system"].includes(limitType)) {
-      throw new Error(
-        "No rate limit type provided!, you must pass either 'monthly' or 'system'"
       );
     }
 
@@ -44,48 +38,47 @@ class APIRateLimitter {
 
   /**
    *
-   * @param {string} uniqueRequestId
-   * @returns {Promise<boolean>} a boolean specifying whether a request has to be dropped or not
+   * @param {string} uniqueRequestId A unique string representing the
+   * @returns {Promise<boolean>} A boolean specifying whether a request has to be dropped or not
    */
   async checkRateLimit(uniqueRequestId) {
-    try {
-      const nowMs = Date.now();
+    const nowMs = Date.now();
 
-      const windowStartInMs = nowMs - this.windowSizeInMs;
+    const windowStartInMs = nowMs - this.windowSizeInMs;
 
-      const windowKey = `${uniqueRequestId}:${this.limitType}`;
+    const windowKey = uniqueRequestId;
 
-      let currentWindowRequestsCount = await this.redisClient.zCount(
-        windowKey,
-        windowStartInMs,
-        nowMs
-      );
+    const currentWindowRequests = await this.redisClient.zRangeByScore(
+      windowKey,
+      windowStartInMs,
+      nowMs
+    );
 
-      this.currentWindowRequestsCount = currentWindowRequestsCount;
+    this.currentWindowRequestsCount = currentWindowRequests.length;
 
-      if (currentWindowRequestsCount >= this.maxRequestsPerWindow) {
-        return false;
-      }
+    if (this.currentWindowRequestsCount >= this.maxRequestsPerWindow) {
+      this.nextWindowStartMs =
+        Number(currentWindowRequests[0]) + this.windowSizeInMs;
 
-      await this.redisClient.zAdd(windowKey, {
-        score: nowMs,
-        value: String(nowMs),
-      });
+      this.retryMs = this.nextWindowStartMs - nowMs;
 
-      await this.redisClient.zRemRangeByScore(
-        windowKey,
-        0,
-        windowStartInMs - 1
-      );
-
-      const windowSizeInSeconds = Math.floor(this.windowSizeInMs / 1000);
-
-      await this.redisClient.expire(windowKey, windowSizeInSeconds);
-
-      return true;
-    } catch (error) {
-      console.error(error);
+      return false;
     }
+
+    await this.redisClient.zAdd(windowKey, {
+      score: nowMs,
+      value: String(nowMs),
+    });
+
+    const windowSizeInSeconds = Math.floor(this.windowSizeInMs / 1000);
+
+    // set expiration time for the new window
+    await this.redisClient.expire(windowKey, windowSizeInSeconds);
+
+    // remove all requests older than the start of the current window
+    await this.redisClient.zRemRangeByScore(windowKey, 0, windowStartInMs - 1);
+
+    return true;
   }
 }
 
@@ -93,14 +86,12 @@ class APIRateLimitterWithRedis {
   /**
    *
    * @param {object} redisClient an instance of redis client with connection
-   * @param {'monthly' | 'system'} limitType
    * @param {number} windowSizeInMs
    * @param {number} maxRequestsPerWindow
    */
-  async create(redisClient, limitType, windowSizeInMs, maxRequestsPerWindow) {
+  async create(redisClient, windowSizeInMs, maxRequestsPerWindow) {
     const rateLimitter = new APIRateLimitter(
       redisClient,
-      limitType,
       windowSizeInMs,
       maxRequestsPerWindow
     );

@@ -146,7 +146,7 @@ input:focus {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 800px;
+  max-width: 800px;
 }
 
 .arl-request {
@@ -178,7 +178,6 @@ input:focus {
 }
 
 .arl-request--params--client-id {
-  text-align: right;
   width: 270px;
 }
 
